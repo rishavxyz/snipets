@@ -1,0 +1,20 @@
+:root {
+	--text-xs: clamp(0.64rem, 0.6547rem + -0.0184vi, 0.651rem);
+	--text-sm: clamp(0.7813rem, 0.7755rem + 0.0287vi, 0.8rem);
+}
+
+pre {
+	margin: 0 !important;
+	pointer-events: none;
+	transform-origin: bottom;
+	min-height: 100%;
+	overflow: visible;
+}
+
+pre code,
+.editor textarea {
+	font-family: RadonVar, monospace !important;
+	font-size: 0.875em !important;
+	line-height: 1.5 !important;
+	white-space: pre-wrap;
+}
