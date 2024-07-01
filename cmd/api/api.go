@@ -100,7 +100,7 @@ func postNewSnipet(r *gin.RouterGroup) {
 }
 
 func getSnipets(r *gin.RouterGroup) {
-	r.GET("/", func(ctx *gin.Context) {
+	r.GET("/api", func(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, Response{
 			http.StatusOK, nil, true, Data{
 				snipets,
