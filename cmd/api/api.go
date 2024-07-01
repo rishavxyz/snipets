@@ -1,7 +1,6 @@
 package api
 
 import (
-	"errors"
 	"html"
 	"net/http"
 
@@ -19,30 +18,37 @@ type Snipet struct {
 }
 
 type Data struct {
-	Snipets  []*Snipet `json:"snipets"`
+	Snipets  *[]Snipet `json:"snipets"`
 	Length   int       `json:"length"`
 	Capacity int       `json:"capacity"`
 }
 
 type Response struct {
-	Status int   `json:"status"`
-	Error  error `json:"error"`
-	Data   any   `json:"data"`
+	Status int    `json:"status"`
+	Error  string `json:"error"`
+	Data   any    `json:"data"`
 }
 
 var (
-	Snipets []*Snipet = make([]*Snipet, 0, 100)
+	Snipets = make([]Snipet, 0, 100)
 	app     *gin.Engine
 )
 
 func init() {
 	app = gin.New()
 
-	app.GET("/api", func(ctx *gin.Context) {
-		ctx.JSON(http.StatusOK, response(http.StatusOK, nil))
+	app.GET("/", func(ctx *gin.Context) {
+		ctx.JSON(http.StatusOK, &Response{
+			Status: http.StatusOK,
+			Data: Data{
+				unescape(&Snipets),
+				len(Snipets),
+				cap(Snipets),
+			},
+		})
 	})
 
-	app.POST("/api/new", func(ctx *gin.Context) {
+	app.POST("/new", func(ctx *gin.Context) {
 		var (
 			code  = ctx.PostForm("code")
 			title = ctx.PostForm("title")
@@ -53,46 +59,36 @@ func init() {
 
 		if code == "" || title == "" {
 			ctx.JSON(http.StatusBadRequest, &Response{
-				http.StatusBadRequest,
-				errors.New("code and title cannot be empty"),
-				gin.H{
+				Status: http.StatusBadRequest,
+				Error:  "Code and title cannot be empty",
+				Data: gin.H{
 					"code":  code,
 					"title": title,
 				},
 			})
+			return
 		}
 
-		snipet := &Snipet{
+		snipet := Snipet{
 			uuid.New(), code, title, desc, lang, theme,
 		}
 
 		Snipets = append(Snipets, snipet)
 
 		ctx.JSON(http.StatusOK, &Response{
-			http.StatusOK,
-			nil,
-			gin.H{"snipet": snipet},
+			Status: http.StatusOK,
+			Data:   gin.H{"snipet": snipet},
 		})
 	})
 }
 
-func response(status int, err error, raw ...bool) *Response {
-	if !(len(raw) == 1 && raw[0]) {
-		for _, v := range Snipets {
-			v.Title = html.UnescapeString(v.Title)
-			v.Desc = html.UnescapeString(v.Desc)
-			v.Code = html.UnescapeString(v.Code)
-		}
+func unescape(snipets *[]Snipet) *[]Snipet {
+	for _, v := range *snipets {
+		v.Code = html.UnescapeString(v.Code)
+		v.Title = html.UnescapeString(v.Title)
+		v.Desc = html.UnescapeString(v.Desc)
 	}
-	return &Response{
-		status,
-		err,
-		Data{
-			Snipets,
-			len(Snipets),
-			cap(Snipets),
-		},
-	}
+	return snipets
 }
 
 // export Handler type

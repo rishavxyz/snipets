@@ -17,7 +17,7 @@ func init() {
 	// seed when not in production
 	if mode != "production" {
 		api.Snipets = append(api.Snipets,
-			&api.Snipet{
+			api.Snipet{
 				Id:    uuid.New(),
 				Code:  "const name = \"Rishav\"",
 				Title: "This is JavaScript",
@@ -25,7 +25,7 @@ func init() {
 				Lang:  "javascript",
 				Theme: "nord",
 			},
-			&api.Snipet{
+			api.Snipet{
 				Id:    uuid.New(),
 				Code:  ":(){:|:&};:",
 				Title: "Fork bomb (Dos attack)",
