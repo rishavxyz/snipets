@@ -1,6 +1,8 @@
 package api
 
 import (
+	"errors"
+	"html"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -23,60 +25,24 @@ type Data struct {
 }
 
 type Response struct {
-	Status  int   `json:"status"`
-	Error   error `json:"error"`
-	Success bool  `json:"success"`
-	Data    Data  `json:"data"`
+	Status int   `json:"status"`
+	Error  error `json:"error"`
+	Data   any   `json:"data"`
 }
 
 var (
-	snipets []*Snipet = make([]*Snipet, 0, 100)
+	Snipets []*Snipet = make([]*Snipet, 0, 100)
 	app     *gin.Engine
 )
 
 func init() {
-	snipets = append(snipets,
-		&Snipet{
-			uuid.New(),
-			"const name = \"Rishav\"",
-			"This is JavaScript",
-			"",
-			"javascript",
-			"nord",
-		},
-		&Snipet{
-			uuid.New(),
-			":(){:|:&};:",
-			"Fork bomb (Dos attack)",
-			"Do NOT run this code, it will crash your system",
-			"bash",
-			"dracula",
-		},
-		&Snipet{
-			uuid.New(),
-			"void main() {\n  println(\"Welcome to Kt\")\n}",
-			"Some kotlin",
-			"Kotlin is fun",
-			"kotlin",
-			"catppuccin-mocha",
-		},
-	)
-
 	app = gin.New()
-	r := app.Group("/api")
 
-	postNewSnipet(r)
-	getSnipets(r)
-}
+	app.GET("/", func(ctx *gin.Context) {
+		ctx.JSON(http.StatusOK, response(http.StatusOK, nil))
+	})
 
-// export Handler type
-func Handler(w http.ResponseWriter, r *http.Request) {
-	app.ServeHTTP(w, r)
-}
-
-// endpoints
-func postNewSnipet(r *gin.RouterGroup) {
-	r.POST("/new", func(ctx *gin.Context) {
+	app.POST("/new", func(ctx *gin.Context) {
 		var (
 			code  = ctx.PostForm("code")
 			title = ctx.PostForm("title")
@@ -85,28 +51,51 @@ func postNewSnipet(r *gin.RouterGroup) {
 			theme = ctx.PostForm("theme")
 		)
 
-		snipets = append(snipets, &Snipet{
-			uuid.New(), code, title, desc, lang, theme,
-		})
+		if code == "" || title == "" {
+			ctx.JSON(http.StatusBadRequest, &Response{
+				http.StatusBadRequest,
+				errors.New("code and title cannot be empty"),
+				gin.H{
+					"code":  code,
+					"title": title,
+				},
+			})
+		}
 
-		ctx.JSON(http.StatusOK, Response{
-			http.StatusOK, nil, true, Data{
-				snipets,
-				len(snipets),
-				cap(snipets),
-			},
+		snipet := &Snipet{
+			uuid.New(), code, title, desc, lang, theme,
+		}
+
+		Snipets = append(Snipets, snipet)
+
+		ctx.JSON(http.StatusOK, &Response{
+			http.StatusOK,
+			nil,
+			gin.H{"snipet": snipet},
 		})
 	})
 }
 
-func getSnipets(r *gin.RouterGroup) {
-	r.GET("/api", func(ctx *gin.Context) {
-		ctx.JSON(http.StatusOK, Response{
-			http.StatusOK, nil, true, Data{
-				snipets,
-				len(snipets),
-				cap(snipets),
-			},
-		})
-	})
+func response(status int, err error, raw ...bool) *Response {
+	if !(len(raw) == 1 && raw[0]) {
+		for _, v := range Snipets {
+			v.Title = html.UnescapeString(v.Title)
+			v.Desc = html.UnescapeString(v.Desc)
+			v.Code = html.UnescapeString(v.Code)
+		}
+	}
+	return &Response{
+		status,
+		err,
+		Data{
+			Snipets,
+			len(Snipets),
+			cap(Snipets),
+		},
+	}
+}
+
+// export Handler type
+func Handler(w http.ResponseWriter, r *http.Request) {
+	app.ServeHTTP(w, r)
 }

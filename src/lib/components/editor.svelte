@@ -178,7 +178,7 @@
 	</optgroup>
 {/snippet}
 
-<section class="grid">
+<div class="grid">
 	<label>
 		Language
 		<select name="langSelect" bind:value={selectedLang}>
@@ -199,9 +199,9 @@
 			{@render themeOptions("Light themes", themes.light)}
 		</select>
 	</label>
-</section>
+</div>
 
-<section class="editor">
+<div class="editor">
 	<textarea
 		spellcheck="false"
 		autocomplete="off"
@@ -218,7 +218,7 @@
 			{@html code}
 		{/if}
 	</div>
-</section>
+</div>
 
 <style>
 	.editor {

@@ -4,30 +4,33 @@
 	import { selectText } from "$lib/utils"
 	import { once } from "$lib/utils/event-modifiers"
 
-	let title = $state("My first hello in Gleam ⭐")
+	type Props = {
+		form: import("./$types").ActionData
+	}
+
+	let title = $state("")
 	let code = $state("")
 	let lang = $state("")
 	let theme = $state("")
+
+	let { form }: Props = $props()
+
+	console.log({ form })
 </script>
 
 <article>
 	<h2>Share your snipet</h2>
 
-	<Editor
-		defaultCode={`
-import gleam/io
-
-pub fn main() {
-  let site = "Snipets"
-  
-  io.println("Hello from " <> site)
-}
-		`}
-		defaultLang="gleam"
-		on_code_change={(value) => (code = value)}
-		on_lang_change={(value) => (lang = value)}
-		on_theme_change={(value) => (theme = value)}
-	/>
+	<label>
+		<Editor
+			on_code_change={(value) => (code = value)}
+			on_lang_change={(value) => (lang = value)}
+			on_theme_change={(value) => (theme = value)}
+		/>
+		{#if form?.error}
+			<small>{form.data?.code}</small>
+		{/if}
+	</label>
 
 	<form method="post" action="?/new">
 		<fieldset>
@@ -39,6 +42,9 @@ pub fn main() {
 					value={title}
 					onfocus={once(selectText)}
 				/>
+				{#if form?.error}
+					<small>{form.data?.title}</small>
+				{/if}
 			</label>
 
 			<details>
@@ -67,3 +73,9 @@ pub fn main() {
 </article>
 
 <Seo title="Create a new Snipet" />
+
+<style>
+	small {
+		color: salmon;
+	}
+</style>
