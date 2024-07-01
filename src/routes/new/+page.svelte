@@ -14,8 +14,7 @@
 	let theme = $state("")
 
 	let { form }: Props = $props()
-
-	console.log({ form })
+	const err = form?.error as { code: string[]; title: string[] } | undefined
 </script>
 
 <article>
@@ -23,12 +22,13 @@
 
 	<label>
 		<Editor
+			defaultCode={form?.data.code ? form.data.code.toString() : ""}
 			on_code_change={(value) => (code = value)}
 			on_lang_change={(value) => (lang = value)}
 			on_theme_change={(value) => (theme = value)}
 		/>
-		{#if form?.error}
-			<small>{form.data?.code}</small>
+		{#if err}
+			<small>{err.code}</small>
 		{/if}
 	</label>
 
@@ -39,11 +39,11 @@
 				<input
 					type="text"
 					name="title"
-					value={title}
+					value={err ? form?.data.title : title}
 					onfocus={once(selectText)}
 				/>
-				{#if form?.error}
-					<small>{form.data?.title}</small>
+				{#if err}
+					<small>{err.title}</small>
 				{/if}
 			</label>
 

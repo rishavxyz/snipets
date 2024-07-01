@@ -9,3 +9,15 @@ export interface Snipet {
     lang: BundledLanguage | "text"
     theme: BundledTheme
 }
+
+export interface Response<T> {
+    status: number,
+    error: string | null,
+    data: T,
+}
+
+export interface SnipetResponse {
+    snipets: Snipet[],
+    length: number,
+    capacity: number
+}

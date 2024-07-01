@@ -6,7 +6,8 @@
 	}
 
 	let { data }: Props = $props()
-	const { snipets } = data.res.data
+
+	const { snipets } = data.data
 </script>
 
 <section>

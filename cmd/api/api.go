@@ -36,8 +36,9 @@ var (
 
 func init() {
 	app = gin.New()
+	r := app.Group("/api")
 
-	app.GET("/", func(ctx *gin.Context) {
+	r.GET("/", func(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, &Response{
 			Status: http.StatusOK,
 			Data: Data{
@@ -48,7 +49,7 @@ func init() {
 		})
 	})
 
-	app.POST("/new", func(ctx *gin.Context) {
+	r.POST("/new", func(ctx *gin.Context) {
 		var (
 			code  = ctx.PostForm("code")
 			title = ctx.PostForm("title")
