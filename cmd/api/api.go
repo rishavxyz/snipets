@@ -38,11 +38,11 @@ var (
 func init() {
 	app = gin.New()
 
-	app.GET("/", func(ctx *gin.Context) {
+	app.GET("/api", func(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, response(http.StatusOK, nil))
 	})
 
-	app.POST("/new", func(ctx *gin.Context) {
+	app.POST("/api/new", func(ctx *gin.Context) {
 		var (
 			code  = ctx.PostForm("code")
 			title = ctx.PostForm("title")
