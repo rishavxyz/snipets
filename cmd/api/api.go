@@ -30,15 +30,14 @@ type Response struct {
 }
 
 var (
-	Snipets = make([]Snipet, 0, 100)
+	Snipets []Snipet = make([]Snipet, 0, 100)
 	app     *gin.Engine
 )
 
 func init() {
 	app = gin.New()
-	r := app.Group("/snipets")
 
-	r.GET("", func(ctx *gin.Context) {
+	app.GET("/snipets", func(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, &Response{
 			Status: http.StatusOK,
 			Data: Data{
@@ -49,36 +48,50 @@ func init() {
 		})
 	})
 
-	r.POST("/new", func(ctx *gin.Context) {
-		var (
-			code  = ctx.PostForm("code")
-			title = ctx.PostForm("title")
-			desc  = ctx.PostForm("desc")
-			lang  = ctx.PostForm("lang")
-			theme = ctx.PostForm("theme")
-		)
+	app.POST("/snipets/new", func(ctx *gin.Context) {
+		fields := make(map[string]string)
+		emptyFields := make([]string, 0, 4)
 
-		if code == "" || title == "" {
+		fields["code"] = ctx.PostForm("code")
+		fields["title"] = ctx.PostForm("title")
+		fields["desc"] = ctx.PostForm("desc")
+		fields["lang"] = ctx.PostForm("lang")
+		fields["theme"] = ctx.PostForm("theme")
+
+		for key, value := range fields {
+			if key == "desc" {
+				continue
+			}
+			if value == "" {
+				emptyFields = append(emptyFields, key)
+			}
+		}
+
+		if len(emptyFields) > 0 {
 			ctx.JSON(http.StatusBadRequest, &Response{
 				Status: http.StatusBadRequest,
-				Error:  "Code and title cannot be empty",
+				Error:  "Fields cannot be empty",
 				Data: gin.H{
-					"code":  code,
-					"title": title,
+					"emptyFields": emptyFields,
 				},
 			})
 			return
 		}
 
 		snipet := Snipet{
-			uuid.New(), code, title, desc, lang, theme,
+			Id:    uuid.New(),
+			Code:  fields["code"],
+			Title: fields["title"],
+			Desc:  fields["Desc"],
+			Lang:  fields["lang"],
+			Theme: fields["theme"],
 		}
 
 		Snipets = append(Snipets, snipet)
 
 		ctx.JSON(http.StatusOK, &Response{
 			Status: http.StatusOK,
-			Data:   gin.H{"snipet": snipet},
+			Data:   gin.H{"snipet": &snipet},
 		})
 	})
 }
