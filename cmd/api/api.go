@@ -38,7 +38,7 @@ func init() {
 	app = gin.New()
 	r := app.Group("/snipets")
 
-	r.GET("/", func(ctx *gin.Context) {
+	r.GET("", func(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, &Response{
 			Status: http.StatusOK,
 			Data: Data{
