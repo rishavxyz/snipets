@@ -38,7 +38,7 @@ func init() {
 	app = gin.New()
 	r := app.Group("/api")
 
-	r.GET("/", func(ctx *gin.Context) {
+	r.GET("/api", func(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, &Response{
 			Status: http.StatusOK,
 			Data: Data{
