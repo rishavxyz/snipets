@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="stylesheet" href="/src/pico.css" />
+		<title>Error - %sveltekit.error.message% | Snipets</title>
+	</head>
+
+	<style>
+		article {
+			padding: 0;
+			overflow: clip;
+
+			& footer {
+				margin: 0;
+			}
+
+			& figure {
+				display: grid;
+				place-content: center;
+
+				& > img {
+					width: 100%;
+					max-width: 640px;
+				}
+			}
+		}
+	</style>
+
+	<body>
+		<nav class="container">
+			<ul>
+				<li>
+					<h2><a href="/" class="contrast">Snipets 🐶</a></h2>
+				</li>
+			</ul>
+			<ul>
+				<li><a href="/app/new" class="secondary">New</a></li>
+			</ul>
+		</nav>
+
+		<main class="container">
+			<article>
+				<figure>
+					<img
+						height="512"
+						width="640"
+						src="//http.cat/%sveltekit.status%"
+						alt="Error cat"
+					/>
+				</figure>
+
+				<footer>
+					<hgroup>
+						<h3>Oh no, that's a %sveltekit.status%</h3>
+						<h6><small>%sveltekit.error.message%</small></h6>
+					</hgroup>
+
+					<div class="grid">
+						<a href="/" role="button" class="contrast">Take me to home</a>
+					</div>
+				</footer>
+			</article>
+		</main>
+	</body>
+</html>

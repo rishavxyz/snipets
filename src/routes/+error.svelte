@@ -4,7 +4,12 @@
 
 <article>
 	<figure>
-		<img src="//http.cat/{$page.status}" alt="Error cat" />
+		<img
+			height="512"
+			width="640"
+			src="//http.cat/{$page.status}"
+			alt="Error cat"
+		/>
 	</figure>
 
 	<footer>
@@ -25,17 +30,18 @@
 		padding: 0;
 		overflow: clip;
 
-		& > footer {
+		& footer {
 			margin: 0;
 		}
-	}
 
-	figure {
-		display: grid;
-		place-content: center;
-		& > img {
-			width: 100%;
-			max-width: 640px;
+		& figure {
+			display: grid;
+			place-content: center;
+
+			& > img {
+				width: 100%;
+				max-width: 640px;
+			}
 		}
 	}
 </style>

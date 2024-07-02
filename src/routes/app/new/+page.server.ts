@@ -4,6 +4,7 @@ import validate from "$lib/utils/validate"
 import { fail, redirect, type Actions } from "@sveltejs/kit"
 import { z } from "zod"
 import type { Response, Snipet } from "$lib/types"
+import { url } from "$lib/config"
 
 
 const schema = {
@@ -60,13 +61,14 @@ export const actions: Actions = {
             fd.set(key, cleanStr)
         }
 
-        const req = await fetch("http://localhost:8000/new", {
+        console.dir({ fd }, { depth: 10 });
+
+        const req = await fetch(url + "/new", {
             method: "post",
             body: fd
         })
         const res = await req.json()
-
-        console.log({ res });
+        console.dir({ res }, { depth: 10 });
 
 
         if (res.status != 200) return fail(res.status,

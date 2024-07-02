@@ -12,14 +12,37 @@
 	let { children }: Props = $props()
 </script>
 
+<svelte:head>
+	<link
+		rel="preload"
+		href="/Lotion-Regular.ttf"
+		as="font"
+		type="font/ttf"
+		crossorigin=""
+	/>
+	<link
+		rel="preload"
+		href="/Lotion-RegularItalic.ttf"
+		as="font"
+		type="font/ttf"
+		crossorigin=""
+	/>
+	<link
+		rel="preload"
+		href="/Lotion-SemiBold.ttf"
+		as="font"
+		type="font/ttf"
+		crossorigin=""
+	/>
+</svelte:head>
+
 <header>
 	<nav class="container">
 		<ul>
 			<li><h2><a href="/" class="contrast">Snipets 🐶</a></h2></li>
 		</ul>
 		<ul>
-			<li><a href="/" class="contrast">Profile</a></li>
-			<li><a href="/new" class="secondary">New</a></li>
+			<li><a href="/app/new" class="secondary">New</a></li>
 		</ul>
 	</nav>
 </header>
@@ -31,5 +54,9 @@
 <style>
 	nav {
 		align-items: baseline;
+
+		& li > h2 a:hover {
+			text-decoration: none;
+		}
 	}
 </style>

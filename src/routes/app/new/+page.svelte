@@ -28,7 +28,7 @@
 			on_theme_change={(value) => (theme = value)}
 		/>
 		{#if err}
-			<small>{err.code}</small>
+			<small class="error">{err.code}</small>
 		{/if}
 	</label>
 
@@ -41,9 +41,10 @@
 					name="title"
 					value={err ? form?.data.title : title}
 					onfocus={once(selectText)}
+					placeholder="My awesome gleam"
 				/>
 				{#if err}
-					<small>{err.title}</small>
+					<small class="error">{err.title}</small>
 				{/if}
 			</label>
 
@@ -53,7 +54,10 @@
 					>Add a description?</summary
 				>
 				<label>
-					Description &lpar;Optional&rpar;
+					Description
+					<span style="color:var(--pico-secondary)">
+						<small>&lpar;Optional&rpar;</small>
+					</span>
 					<textarea name="desc" rows="8" style="resize:none"></textarea>
 				</label>
 			</details>
@@ -75,7 +79,7 @@
 <Seo title="Create a new Snipet" />
 
 <style>
-	small {
+	small.error {
 		color: salmon;
 	}
 </style>

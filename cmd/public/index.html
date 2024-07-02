@@ -6,21 +6,26 @@
 		<link rel="stylesheet" href="https://unpkg.com/98.css" />
 		<title>Snipets API - Home</title>
 	</head>
-	<body>
-		<h1>Snipets API Home page</h1>
+	<body style="background-color: #c0c0c0;">
+		<h3>Snipets API Home page</h3>
 
-		<div class="window" style="width: 300px">
-			<div class="title-bar">
-				<div class="title-bar-text">API endpoits are</div>
+		<section style="display: grid; place-content: center">
+			<div class="window" style="width: 300px">
+				<div class="title-bar">
+					<div class="title-bar-text">API endpoits are</div>
+				</div>
+				<div class="window-body">
+					<dl>
+						<dt><a href="/snipets">GET /snipets</a></dt>
+						<dd>Returns 200 with all the snipets</dd>
+
+						<dt><a href="/snipets/new">POST /snipets/new</a></dt>
+						<dd>Post a new snipet</dd>
+                        <dd>May return 400 if any of the fields are missing</dd>
+                        <dd>Returns 200 with object "snipet" that have been sent</dd>
+					</dl>
+				</div>
 			</div>
-			<div class="window-body">
-                <dl>
-                    <dt><code>/snipets</code></dt>
-                    <dd>Get all the snipets wtih code 200</dd>
-                    <dt><code>/snipets/new</code></dt>
-                    <dd>Post a new snipet</dd>
-                </dl>
-			</div>
-		</div>
+		</section>
 	</body>
 </html>

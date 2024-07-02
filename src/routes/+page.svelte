@@ -1,58 +1,44 @@
-<script lang="ts">
-	import { codeToHtml } from "$lib/utils/codeToHtml"
+<section class="hero">
+	<div>
+		<h1>
+			A place for developers
+			<br />
+			what you can call it a home
+		</h1>
+		<p>Snipets is a code sharing platform</p>
+	</div>
 
-	type Props = {
-		data: import("./$types").PageServerData
-	}
-
-	let { data }: Props = $props()
-
-	const { snipets } = data.data
-</script>
-
-<section>
-	<h1>Share code, Share love</h1>
-</section>
-
-<section>
-	<p>Popular snipets</p>
-	{#each snipets as snipet}
-		{@const param = {
-			code: snipet.code,
-			lang: snipet.lang,
-			theme: snipet.theme
-		}}
-		<article>
-			<hgroup>
-				<h5>{snipet.title}</h5>
-				<h6><small>{snipet.desc}</small></h6>
-			</hgroup>
-
-			{#await codeToHtml(param)}
-				<pre><code id="code">Getting ready</code></pre>
-			{:then code}
-				<div class="snipet">
-					<code>{snipet.lang}</code>
-					{@html code}
-				</div>
-			{/await}
-		</article>
-	{/each}
+	<div class="grid cta">
+		<a href="/app/new" role="button">Share your code</a>
+		<a href="/app" role="button" class="contrast">Explore snipets</a>
+	</div>
 </section>
 
 <style>
-	code#code {
-		background-color: var(--pico-background-color);
+	.hero {
+		margin-top: 3rem;
+		margin-inline: auto;
+		text-align: center;
+		max-width: 60ch;
+
+		& h1 {
+			text-wrap: balance;
+		}
+
+		.cta {
+			max-width: 69%;
+			margin-inline: auto;
+		}
 	}
-	.snipet {
-		position: relative;
-		& > code {
-			position: absolute;
-			z-index: 999;
-			isolation: isolate;
-			top: 0.25rem;
-			right: 0.2rem;
-			font-size: var(--text-xs);
+
+	@media (width <= 768px) {
+		.hero {
+			margin-top: auto;
+			max-width: inherit;
+
+			.cta {
+				max-width: inherit;
+			}
 		}
 	}
 </style>

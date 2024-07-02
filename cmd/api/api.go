@@ -50,7 +50,6 @@ func init() {
 
 	app.POST("/snipets/new", func(ctx *gin.Context) {
 		fields := make(map[string]string)
-		emptyFields := make([]string, 0, 4)
 
 		fields["code"] = ctx.PostForm("code")
 		fields["title"] = ctx.PostForm("title")
@@ -58,12 +57,24 @@ func init() {
 		fields["lang"] = ctx.PostForm("lang")
 		fields["theme"] = ctx.PostForm("theme")
 
+		emptyFields := make([]string, 0, len(fields))
+
 		for key, value := range fields {
-			if key == "desc" {
-				continue
-			}
-			if value == "" {
-				emptyFields = append(emptyFields, key)
+			switch key {
+			case "lang":
+				if value == "" {
+					fields[key] = "text"
+				}
+			case "theme":
+				if value == "" {
+					fields[key] = "poimandres"
+				}
+			default:
+				if key != "desc" && len(value) == 0 {
+					emptyFields = append(emptyFields, key)
+				} else {
+					fields[key] = html.UnescapeString(value)
+				}
 			}
 		}
 
@@ -82,7 +93,7 @@ func init() {
 			Id:    uuid.New(),
 			Code:  fields["code"],
 			Title: fields["title"],
-			Desc:  fields["Desc"],
+			Desc:  fields["desc"],
 			Lang:  fields["lang"],
 			Theme: fields["theme"],
 		}

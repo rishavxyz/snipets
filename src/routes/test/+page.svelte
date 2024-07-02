@@ -21,8 +21,8 @@
 
 	let {
 		defaultCode = "",
-		defaultLang = "gleam",
-		defaultTheme = "poimandres",
+		defaultLang = "javascript",
+		defaultTheme = "ayu-dark",
 		...props
 	}: Props = $props()
 
@@ -31,15 +31,7 @@
 	let selectedLang = $state<BundledLanguage | "text">(defaultLang)
 	let selectedTheme = $state<BundledTheme>(defaultTheme)
 
-	const codePlaceholder = `
-import gleam/io
-
-pub fn main() {
-	let name = "Snipets"
-	io.println("Welcome to " <> name)
-}
-	`.trim()
-	const TAB_SPACE = "\t"
+	const TAB_SPACE = "  "
 
 	function updateText(e: KeyboardEvent) {
 		type CursorPosition = number
@@ -192,9 +184,6 @@ pub fn main() {
 <div class="grid">
 	<label>
 		Language
-		<span style="color:var(--pico-secondary)">
-			<small>&lpar;Search with keyboard&rpar;</small>
-		</span>
 		<select name="langSelect" bind:value={selectedLang}>
 			<option value="text" selected>Plain text</option>
 			{@render options(langs)}
@@ -203,9 +192,6 @@ pub fn main() {
 
 	<label>
 		Theme
-		<span style="color:var(--pico-secondary)">
-			<small>&lpar;Search with keyboard&rpar;</small>
-		</span>
 		<select
 			name="themeSelect"
 			bind:value={selectedTheme}
@@ -227,7 +213,6 @@ pub fn main() {
 		onfocus={once(selectText)}
 		onscroll={matchScrollPos}
 		bind:value
-		placeholder={codePlaceholder}
 	></textarea>
 
 	{#if code}{@html code}{/if}
@@ -237,7 +222,7 @@ pub fn main() {
 	.editor {
 		overflow: hidden;
 		position: relative;
-		height: 480px;
+		height: 360px;
 
 		& > textarea {
 			background-color: transparent;
@@ -259,9 +244,9 @@ pub fn main() {
 	textarea,
 	:global(pre.shiki),
 	:global(pre.shiki code) {
-		font-family: Lotion, monospace !important;
+		font-family: monospace !important;
 		font-weight: 400 !important;
-		font-size: 1rem !important;
+		font-size: var(--text-sm) !important;
 		line-height: 1.25 !important;
 		white-space: pre !important;
 	}
