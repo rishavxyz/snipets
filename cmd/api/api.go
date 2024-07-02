@@ -36,8 +36,9 @@ var (
 
 func init() {
 	app = gin.New()
+	r1 := app.Group("/snipets")
 
-	app.GET("/snipets", func(ctx *gin.Context) {
+	r1.GET("/", func(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, &Response{
 			Status: http.StatusOK,
 			Data: Data{
@@ -48,7 +49,7 @@ func init() {
 		})
 	})
 
-	app.POST("/snipets/new", func(ctx *gin.Context) {
+	r1.POST("/new", func(ctx *gin.Context) {
 		fields := make(map[string]string)
 		emptyFields := make([]string, 0, 4)
 
