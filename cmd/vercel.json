@@ -2,8 +2,12 @@
 	"trailingSlash": false,
 	"rewrites": [
 		{
-			"source": "/(.*)",
-			"destination": "/api/api.go"
+			"source": "/snipets(.*)",
+			"destination": "/api/snipets.go"
+		},
+		{
+			"source": "/auth(.*)",
+			"destination": "/api/auth.go"
 		}
 	]
 }

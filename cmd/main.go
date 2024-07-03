@@ -39,7 +39,8 @@ func init() {
 }
 
 func main() {
-	http.HandleFunc("/", api.Handler)
+	http.HandleFunc("/snipets", api.Main)
+	http.HandleFunc("/auth", api.Auth)
 
 	fmt.Printf("\nAPI server running at http://localhost:%s\n", PORT)
 
