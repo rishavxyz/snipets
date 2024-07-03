@@ -3,24 +3,25 @@ package api
 import (
 	"fmt"
 	"net/http"
+	gin "snipets/app"
 )
 
 func init() {
-	App.GET("/auth", func(ctx CTX) {
-		ctx.JSON(200, Map{"Helloo": "world"})
+	gin.App.GET("/auth", func(ctx gin.CTX) {
+		ctx.JSON(200, gin.Map{"Helloo": "world"})
 	})
 
-	App.POST("/auth", func(ctx CTX) {
+	gin.App.POST("/auth", func(ctx gin.CTX) {
 		var (
 			name = ctx.PostForm("name")
 		)
 
 		fmt.Printf("name: %s\n", name)
 
-		ctx.JSON(200, Map{"name": name})
+		ctx.JSON(200, gin.Map{"name": name})
 	})
 }
 
 func Auth(w http.ResponseWriter, r *http.Request) {
-	App.ServeHTTP(w, r)
+	gin.App.ServeHTTP(w, r)
 }
