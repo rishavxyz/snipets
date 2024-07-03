@@ -1,3 +1,7 @@
+<script>
+	import Seo from "$lib/components/seo.svelte"
+</script>
+
 <section class="hero">
 	<div>
 		<h1>
@@ -5,14 +9,19 @@
 			<br />
 			what you can call it a home
 		</h1>
-		<p>Snipets is a code sharing platform</p>
+		<p>
+			Snipets is a code <i>snippet</i> sharing platform where you can share your
+			code snippet like a boss.
+		</p>
 	</div>
 
 	<div class="grid cta">
-		<a href="/app/new" role="button">Share your code</a>
+		<a href="/app/new" role="button">Share your snipet</a>
 		<a href="/app" role="button" class="contrast">Explore snipets</a>
 	</div>
 </section>
+
+<Seo title="Share code snippets" />
 
 <style>
 	.hero {

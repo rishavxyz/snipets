@@ -75,6 +75,6 @@ export const actions: Actions = {
             { ...res as Response<{ code: string, title: string }> }
         )
 
-        throw redirect(302, "/")
+        throw redirect(302, "/app")
     }
 }
