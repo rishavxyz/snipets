@@ -1,3 +1,5 @@
+all: run
+
 build:
 	go build -o bin/api main.go
 
@@ -7,4 +9,5 @@ run: build
 clean:
 	rm -r bin/
 
-all: build
+dev:
+	$(GOPATH)/bin/air

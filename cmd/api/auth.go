@@ -3,25 +3,31 @@ package api
 import (
 	"fmt"
 	"net/http"
-	gin "snipets/app"
+
+	"github.com/gin-gonic/gin"
 )
 
+var app *gin.Engine = gin.New()
+
+type Context = *gin.Context
+type Map = map[string]interface{}
+
 func init() {
-	gin.App.GET("/auth", func(ctx gin.CTX) {
-		ctx.JSON(200, gin.Map{"Helloo": "world"})
+	app.GET("/auth", func(ctx Context) {
+		ctx.JSON(200, Map{"Helloo": "world"})
 	})
 
-	gin.App.POST("/auth", func(ctx gin.CTX) {
+	app.POST("/auth", func(ctx Context) {
 		var (
 			name = ctx.PostForm("name")
 		)
 
 		fmt.Printf("name: %s\n", name)
 
-		ctx.JSON(200, gin.Map{"name": name})
+		ctx.JSON(200, Map{"name": name})
 	})
 }
 
 func Auth(w http.ResponseWriter, r *http.Request) {
-	gin.App.ServeHTTP(w, r)
+	app.ServeHTTP(w, r)
 }

@@ -1,92 +1,107 @@
 package api
 
 import (
-	"crypto/sha256"
+	"crypto/sha512"
+	"encoding/hex"
 	"html"
 	"net/http"
+	"strings"
 
-	gin "snipets/app"
-
+	validator "github.com/asaskevich/govalidator"
 	"github.com/google/uuid"
 )
 
 type User struct {
-	Id       string
-	Name     string
-	Username string
-	Password string
+	Id       string `json:"id"       valid:"-"`
+	Name     string `json:"name"     valid:"required,ascii,stringlength(2|32)~name->Must be in between 2 to 32 characters"`
+	Username string `json:"username" valid:"required,alphanum~username->Only A-Z and 0-9 allowed,stringlength(4|64)~username->Must be in between 4 to 64 characters,matches(^[a-z][a-z0-9]+)~username->Cannot start with a number"`
+	Password string `json:"password" valid:"required,stringlength(6|64)~password->Must be in between 6 to 64 characters"`
 }
 
+type UserID = string
+
+var users = make(map[UserID]User)
+var usersSlice = make([]User, 0, 50)
+
 func init() {
-	gin.App.GET("/users") // TODO
+	app.GET("/users", func(ctx Context) {
+		ctx.JSON(http.StatusOK, &Response{
+			Status: 200,
+			Data:   Map{"users": usersSlice},
+		})
+	})
 
-	gin.App.POST("/users/new", func(ctx gin.CTX) {
-		user := make(map[string]string)
-		user["name"] = ctx.PostForm("name")
-		user["username"] = ctx.PostForm("uname")
-		user["password"] = ctx.PostForm("passwd")
+	app.POST("/users", func(ctx Context) {
+		user := User{}
+		user.Name = ctx.PostForm("name")
+		user.Username = ctx.PostForm("uname")
+		user.Password = ctx.PostForm("passwd")
 
-		emptyFields := make([]string, 0, len(user))
+		_, err := validator.ValidateStruct(user)
 
-		for key, value := range user {
-			switch key {
-			case "password":
-				if value == "" {
-					emptyFields = append(emptyFields, key)
-				} else if len(value) < 8 || len(value) > 28 {
-					ctx.JSON(406, &Response{
-						Status: 406,
-						Error:  "Password must be between 8 to 28 letters",
-					})
-					return
-				} else {
-					if ctx.PostForm("hashed") != "true" {
-						h := sha256.New()
-						h.Write([]byte(value))
-						user["password"] = string(h.Sum(nil))
-					}
-				}
-			default:
-				if value == "" {
-					emptyFields = append(emptyFields, key)
-				} else {
-					user[key] = html.EscapeString(value)
-				}
+		errorFields := make([]Map, 0, 3)
+
+		if err != nil {
+			errs := strings.Split(err.Error(), ";")
+
+			for _, err := range errs {
+				s := strings.Split(err, "->")
+				errorFields = append(errorFields, Map{s[0]: s[1]})
 			}
-		}
 
-		if len(emptyFields) > 0 {
-			ctx.JSON(400, &Response{
-				Status: 400,
-				Error:  "Username and password are must",
-				Data: gin.Map{
-					"emptyFields": emptyFields,
-				},
+			ctx.JSON(http.StatusUnprocessableEntity, &Response{
+				422,
+				"Input validation error",
+				Map{"fields": errorFields},
 			})
 			return
 		}
-		user["id"] = uuid.New().String()
 
-		users := make([]User, 0, 50)
-		newUser := &User{
-			Id:       user["id"],
-			Name:     user["name"],
-			Username: user["username"],
-			Password: user["password"],
+		if _, found := users[user.Username]; found {
+			ctx.JSON(http.StatusConflict, &Response{
+				409,
+				"Username already taken",
+				Map{"username": user.Username},
+			})
+			return
 		}
-		users = append(users, *newUser)
 
-		ctx.JSON(200, &Response{
+		if ctx.PostForm("hashed") != "true" {
+			user.Password = hash(&user.Password)
+		}
+		if ctx.PostForm("escaped") != "true" {
+			user.Name = html.EscapeString(user.Name)
+			user.Username = html.EscapeString(user.Username)
+		}
+
+		user.Id = uuid.NewString()
+
+		users[user.Username] = User{
+			user.Id,
+			user.Name,
+			user.Username,
+			user.Password,
+		}
+
+		for _, value := range users {
+			if value.Id == user.Id {
+				usersSlice = append(usersSlice, value)
+			}
+		}
+
+		ctx.JSON(http.StatusOK, &Response{
 			Status: 200,
-			Data: gin.Map{
-				"userCreated": true,
-				"newUser":     *newUser,
-				"users":       users,
-			},
+			Data:   Map{"user": users[user.Username]},
 		})
 	})
 }
 
 func Users(w http.ResponseWriter, r *http.Request) {
-	gin.App.ServeHTTP(w, r)
+	app.ServeHTTP(w, r)
+}
+
+func hash(password *string) string {
+	hash := sha512.New()
+	hash.Write([]byte(*password))
+	return hex.EncodeToString(hash.Sum(nil))
 }

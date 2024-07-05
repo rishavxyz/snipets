@@ -8,6 +8,10 @@
 		{
 			"source": "/auth(.*)",
 			"destination": "/api/auth.go"
+		},
+		{
+			"source": "/user(.*)",
+			"destination": "/api/users.go"
 		}
 	]
 }

@@ -4,8 +4,6 @@ import (
 	"html"
 	"net/http"
 
-	gin "snipets/app"
-
 	"github.com/google/uuid"
 )
 
@@ -19,28 +17,28 @@ type Snipet struct {
 }
 
 type Response struct {
-	Status int     `json:"status"`
-	Error  string  `json:"error,omitempty"`
-	Data   gin.Map `json:"data"`
+	Status int    `json:"status"`
+	Error  string `json:"error,omitempty"`
+	Data   Map    `json:"data"`
 }
 
 var (
-	Snipets []Snipet = make([]Snipet, 0, 100)
+	snipets []Snipet = make([]Snipet, 0, 100)
 )
 
 func init() {
-	gin.App.GET("/snipets", func(ctx gin.CTX) {
+	app.GET("/snipets", func(ctx Context) {
 		ctx.JSON(http.StatusOK, &Response{
 			Status: http.StatusOK,
-			Data: gin.Map{
-				"snipets":  unescape(&Snipets),
-				"total":    len(Snipets),
-				"capacity": cap(Snipets),
+			Data: Map{
+				"snipets":  unescape(&snipets),
+				"total":    len(snipets),
+				"capacity": cap(snipets),
 			},
 		})
 	})
 
-	gin.App.POST("/snipets/new", func(ctx gin.CTX) {
+	app.POST("/snipets", func(ctx Context) {
 		isEscaped := ctx.PostForm("escaped")
 
 		fields := make(map[string]string)
@@ -79,7 +77,7 @@ func init() {
 			ctx.JSON(http.StatusBadRequest, &Response{
 				Status: http.StatusBadRequest,
 				Error:  "Fields cannot be empty",
-				Data: gin.Map{
+				Data: Map{
 					"emptyFields": emptyFields,
 				},
 			})
@@ -95,7 +93,7 @@ func init() {
 			Theme: fields["theme"],
 		}
 
-		Snipets = append(Snipets, *snipet)
+		snipets = append(snipets, *snipet)
 
 		ctx.JSON(http.StatusOK, &Response{
 			Status: http.StatusOK,
@@ -113,6 +111,6 @@ func unescape(snipets *[]Snipet) *[]Snipet {
 }
 
 // export Handler type
-func Main(w http.ResponseWriter, r *http.Request) {
-	gin.App.ServeHTTP(w, r)
+func Snipets(w http.ResponseWriter, r *http.Request) {
+	app.ServeHTTP(w, r)
 }
