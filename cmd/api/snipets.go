@@ -8,12 +8,12 @@ import (
 )
 
 type Snipet struct {
-	Id    uuid.UUID `json:"id"`
-	Code  string    `json:"code"`
-	Title string    `json:"title"`
-	Desc  string    `json:"desc"`
-	Lang  string    `json:"lang"`
-	Theme string    `json:"theme"`
+	Id    string `json:"id"`
+	Code  string `json:"code"  valid:"required"`
+	Title string `json:"title" valid:"required,stringlength(2|64)"`
+	Desc  string `json:"desc"`
+	Lang  string `json:"lang"  valid:"required"`
+	Theme string `json:"theme"`
 }
 
 type Response struct {
@@ -23,7 +23,7 @@ type Response struct {
 }
 
 var (
-	snipets []Snipet = make([]Snipet, 0, 100)
+	snipets []Snipet = make([]Snipet, 0, 50)
 )
 
 func init() {
@@ -85,7 +85,7 @@ func init() {
 		}
 
 		snipet := &Snipet{
-			Id:    uuid.New(),
+			Id:    uuid.NewString(),
 			Code:  fields["code"],
 			Title: fields["title"],
 			Desc:  fields["desc"],

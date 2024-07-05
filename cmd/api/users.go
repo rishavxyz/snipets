@@ -12,16 +12,18 @@ import (
 )
 
 type User struct {
-	Id       string `json:"id"       valid:"-"`
-	Name     string `json:"name"     valid:"required,ascii,stringlength(2|32)~name->Must be in between 2 to 32 characters"`
-	Username string `json:"username" valid:"required,alphanum~username->Only A-Z and 0-9 allowed,stringlength(4|64)~username->Must be in between 4 to 64 characters,matches(^[a-z][a-z0-9]+)~username->Cannot start with a number"`
-	Password string `json:"password" valid:"required,stringlength(6|64)~password->Must be in between 6 to 64 characters"`
+	Id       string `json:"id"                 valid:"-"`
+	Name     string `json:"name"               valid:"required,ascii,stringlength(2|32)~name->Must be in between 2 to 32 characters"`
+	Username string `json:"username"           valid:"required,alphanum~username->Only A-Z and 0-9 allowed,stringlength(4|64)~username->Must be in between 4 to 64 characters,matches(^[a-z][a-z0-9]+)~username->Cannot start with a number"`
+	Password string `json:"password,omitempty" valid:"required,stringlength(6|64)~password->Must be in between 6 to 64 characters"`
 }
 
 type UserID = string
 
-var users = make(map[UserID]User)
-var usersSlice = make([]User, 0, 50)
+var (
+	users      = make(map[UserID]User)
+	usersSlice = make([]User, 0, 50)
+)
 
 func init() {
 	app.GET("/users", func(ctx Context) {
@@ -85,7 +87,12 @@ func init() {
 
 		for _, value := range users {
 			if value.Id == user.Id {
-				usersSlice = append(usersSlice, value)
+				usersSlice = append(usersSlice, User{
+					user.Id,
+					user.Name,
+					user.Username,
+					"",
+				})
 			}
 		}
 
