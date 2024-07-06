@@ -60,15 +60,13 @@ export const actions: Actions = {
             )
             fd.set(key, cleanStr)
         }
-
-        console.dir({ fd }, { depth: 10 });
+        fd.append("escaped", "true")
 
         const req = await fetch(url + "/new", {
             method: "post",
             body: fd
         })
         const res = await req.json()
-        console.dir({ res }, { depth: 10 });
 
 
         if (res.status != 200) return fail(res.status,
