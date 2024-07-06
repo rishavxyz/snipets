@@ -3,17 +3,20 @@ package api
 import (
 	"html"
 	"net/http"
+	"strings"
 
+	validator "github.com/asaskevich/govalidator"
 	"github.com/google/uuid"
 )
 
 type Snipet struct {
-	Id    string `json:"id"`
-	Code  string `json:"code"  valid:"required"`
-	Title string `json:"title" valid:"required,stringlength(2|64)"`
-	Desc  string `json:"desc"`
-	Lang  string `json:"lang"  valid:"required"`
-	Theme string `json:"theme"`
+	Id    uuid.UUID `json:"id"`
+	UID   string    `json:"userId" valid:"required~userId->user id is needed"`
+	Code  string    `json:"code"   valid:"required~code->it must be some code"`
+	Title string    `json:"title"  valid:"required~title->title is needed,ascii~title->No special characters are allowed,stringlength(2|64)~title->Must be in between 2 to 64 characters"`
+	Desc  string    `json:"desc"`
+	Lang  string    `json:"lang"`
+	Theme string    `json:"theme"`
 }
 
 type Response struct {
@@ -23,7 +26,8 @@ type Response struct {
 }
 
 var (
-	snipets []Snipet = make([]Snipet, 0, 50)
+	snipets      = make(map[uuid.UUID]Snipet)
+	snipetsSlice = make([]Snipet, 0, 50)
 )
 
 func init() {
@@ -31,83 +35,97 @@ func init() {
 		ctx.JSON(http.StatusOK, &Response{
 			Status: http.StatusOK,
 			Data: Map{
-				"snipets":  unescape(&snipets),
-				"total":    len(snipets),
-				"capacity": cap(snipets),
+				"snipets":  snipetsSlice,
+				"total":    len(snipetsSlice),
+				"capacity": cap(snipetsSlice),
 			},
 		})
 	})
 
 	app.POST("/snipets", func(ctx Context) {
-		isEscaped := ctx.PostForm("escaped")
 
-		fields := make(map[string]string)
-		fields["code"] = ctx.PostForm("code")
-		fields["title"] = ctx.PostForm("title")
-		fields["desc"] = ctx.PostForm("desc")
-		fields["lang"] = ctx.PostForm("lang")
-		fields["theme"] = ctx.PostForm("theme")
+		snipet := Snipet{}
+		snipet.Code = ctx.PostForm("code")
+		snipet.Title = ctx.PostForm("title")
+		snipet.Desc = ctx.PostForm("desc")
+		snipet.Lang = ctx.PostForm("lang")
+		snipet.Theme = ctx.PostForm("theme")
+		snipet.UID = ctx.PostForm("userId")
 
-		emptyFields := make([]string, 0, len(fields))
-
-		for key, value := range fields {
-			switch key {
-			case "lang":
-				if value == "" {
-					fields[key] = "text"
-				}
-			case "theme":
-				if value == "" {
-					fields[key] = "poimandres"
-				}
-			default:
-				if key != "desc" && len(value) == 0 {
-					emptyFields = append(emptyFields, key)
-				} else {
-					if isEscaped == "" {
-						fields[key] = html.EscapeString(value)
-					} else {
-						fields[key] = value
-					}
-				}
-			}
+		if snipet.UID == "" {
+			ctx.JSON(400, &Response{
+				400,
+				"User id not provided",
+				nil,
+			})
+			return
 		}
 
-		if len(emptyFields) > 0 {
-			ctx.JSON(http.StatusBadRequest, &Response{
-				Status: http.StatusBadRequest,
-				Error:  "Fields cannot be empty",
-				Data: Map{
-					"emptyFields": emptyFields,
+		_, validUserId := users[snipet.UID]
+
+		if !validUserId {
+			ctx.JSON(401, &Response{
+				401,
+				"User does not exist",
+				Map{
+					"userId": snipet.UID,
 				},
 			})
 			return
 		}
 
-		snipet := &Snipet{
-			Id:    uuid.NewString(),
-			Code:  fields["code"],
-			Title: fields["title"],
-			Desc:  fields["desc"],
-			Lang:  fields["lang"],
-			Theme: fields["theme"],
+		_, err := validator.ValidateStruct(snipet)
+
+		errorFields := make([]Map, 0)
+
+		if err != nil {
+			errs := strings.Split(err.Error(), ";")
+
+			for _, err := range errs {
+				s := strings.Split(err, "->")
+				errorFields = append(errorFields, Map{s[0]: s[1]})
+			}
+
+			ctx.JSON(http.StatusUnprocessableEntity, &Response{
+				422,
+				"Input validation error",
+				Map{"fields": errorFields},
+			})
+			return
 		}
 
-		snipets = append(snipets, *snipet)
+		if ctx.PostForm("escaped") != "true" {
+			snipet.Code = html.EscapeString(snipet.Code)
+			snipet.Title = html.EscapeString(snipet.Title)
+			if snipet.Desc != "" {
+				snipet.Desc = html.EscapeString(snipet.Desc)
+			}
+		}
 
-		ctx.JSON(http.StatusOK, &Response{
-			Status: http.StatusOK,
+		if snipet.Lang == "" {
+			snipet.Lang = "text"
+		}
+
+		if snipet.Theme == "" {
+			snipet.Theme = "poimandres"
+		}
+
+		snipet.Id = uuid.New()
+		snipets[snipet.Id] = snipet
+
+		for _, value := range snipets {
+			if value.Id == snipet.Id {
+				snipetsSlice = append(snipetsSlice, value)
+			}
+		}
+
+		ctx.JSON(200, &Response{
+			Status: 200,
+			Data: Map{
+				"snipet": snipet,
+			},
 		})
 	})
-}
-
-func unescape(snipets *[]Snipet) *[]Snipet {
-	for _, v := range *snipets {
-		v.Code = html.UnescapeString(v.Code)
-		v.Title = html.UnescapeString(v.Title)
-		v.Desc = html.UnescapeString(v.Desc)
-	}
-	return snipets
 }
 
 // export Handler type

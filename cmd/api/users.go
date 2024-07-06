@@ -1,6 +1,7 @@
 package api
 
 import (
+	"crypto/md5"
 	"crypto/sha512"
 	"encoding/hex"
 	"html"
@@ -8,17 +9,16 @@ import (
 	"strings"
 
 	validator "github.com/asaskevich/govalidator"
-	"github.com/google/uuid"
 )
 
-type User struct {
-	Id       string `json:"id"                 valid:"-"`
-	Name     string `json:"name"               valid:"required,ascii,stringlength(2|32)~name->Must be in between 2 to 32 characters"`
-	Username string `json:"username"           valid:"required,alphanum~username->Only A-Z and 0-9 allowed,stringlength(4|64)~username->Must be in between 4 to 64 characters,matches(^[a-z][a-z0-9]+)~username->Cannot start with a number"`
-	Password string `json:"password,omitempty" valid:"required,stringlength(6|64)~password->Must be in between 6 to 64 characters"`
-}
-
 type UserID = string
+
+type User struct {
+	Id       UserID `json:"id"                 valid:"-"`
+	Name     string `json:"name"               valid:"required~name->name is needed,ascii~name->No special characters allowrd,stringlength(2|32)~name->Must be in between 2 to 32 characters"`
+	Username string `json:"username"           valid:"required~username->username is needed,alphanum~username->Only A-Z and 0-9 allowed,stringlength(4|64)~username->Must be in between 4 to 64 characters,matches(^[a-z][a-z0-9]+)~username->Cannot start with a number"`
+	Password string `json:"password,omitempty" valid:"required~password->password is needed,stringlength(6|64)~password->Must be in between 6 to 64 characters"`
+}
 
 var (
 	users      = make(map[UserID]User)
@@ -29,7 +29,11 @@ func init() {
 	app.GET("/users", func(ctx Context) {
 		ctx.JSON(http.StatusOK, &Response{
 			Status: 200,
-			Data:   Map{"users": usersSlice},
+			Data: Map{
+				"users":    usersSlice,
+				"total":    len(usersSlice),
+				"capacity": cap(usersSlice),
+			},
 		})
 	})
 
@@ -41,7 +45,7 @@ func init() {
 
 		_, err := validator.ValidateStruct(user)
 
-		errorFields := make([]Map, 0, 3)
+		errorFields := make([]Map, 0)
 
 		if err != nil {
 			errs := strings.Split(err.Error(), ";")
@@ -59,7 +63,7 @@ func init() {
 			return
 		}
 
-		if _, found := users[user.Username]; found {
+		if _, found := users[user.Id]; found {
 			ctx.JSON(http.StatusConflict, &Response{
 				409,
 				"Username already taken",
@@ -76,29 +80,26 @@ func init() {
 			user.Username = html.EscapeString(user.Username)
 		}
 
-		user.Id = uuid.NewString()
+		uid := CreateUserId(&user.Username)
 
-		users[user.Username] = User{
-			user.Id,
-			user.Name,
-			user.Username,
-			user.Password,
-		}
+		user.Id = uid
+		users[uid] = user
 
 		for _, value := range users {
 			if value.Id == user.Id {
-				usersSlice = append(usersSlice, User{
-					user.Id,
-					user.Name,
-					user.Username,
-					"",
-				})
+				usersSlice = append(usersSlice, value)
 			}
 		}
 
-		ctx.JSON(http.StatusOK, &Response{
+		ctx.JSON(200, &Response{
 			Status: 200,
-			Data:   Map{"user": users[user.Username]},
+			Data: Map{
+				"user": User{
+					Id:       user.Id,
+					Name:     user.Name,
+					Username: user.Username,
+				},
+			},
 		})
 	})
 }
@@ -110,5 +111,11 @@ func Users(w http.ResponseWriter, r *http.Request) {
 func hash(password *string) string {
 	hash := sha512.New()
 	hash.Write([]byte(*password))
+	return hex.EncodeToString(hash.Sum(nil))
+}
+
+func CreateUserId(username *string) string {
+	hash := md5.New()
+	hash.Write([]byte(*username))
 	return hex.EncodeToString(hash.Sum(nil))
 }
