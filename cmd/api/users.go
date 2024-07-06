@@ -74,8 +74,6 @@ func init() {
 			return
 		}
 
-		users[user.Id] = user
-
 		if ctx.PostForm("hashed") != "true" {
 			user.Password = hash(&user.Password)
 		}
@@ -83,6 +81,8 @@ func init() {
 			user.Name = html.EscapeString(user.Name)
 			user.Username = html.EscapeString(user.Username)
 		}
+
+		users[user.Id] = user
 
 		for _, value := range users {
 			if value.Id == user.Id {
