@@ -63,6 +63,8 @@ func init() {
 			return
 		}
 
+		user.Id = CreateUserId(&user.Username)
+
 		if _, found := users[user.Id]; found {
 			ctx.JSON(http.StatusConflict, &Response{
 				409,
@@ -72,6 +74,8 @@ func init() {
 			return
 		}
 
+		users[user.Id] = user
+
 		if ctx.PostForm("hashed") != "true" {
 			user.Password = hash(&user.Password)
 		}
@@ -79,11 +83,6 @@ func init() {
 			user.Name = html.EscapeString(user.Name)
 			user.Username = html.EscapeString(user.Username)
 		}
-
-		uid := CreateUserId(&user.Username)
-
-		user.Id = uid
-		users[uid] = user
 
 		for _, value := range users {
 			if value.Id == user.Id {
